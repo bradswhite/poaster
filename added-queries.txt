@@ -1,0 +1,32 @@
+
+
+//to users
+    userByUsername(username: String!): User @requireAuth
+
+// Added...
+export const userByUsername: QueryResolvers['user'] = ({ username }) => {
+  return db.user.findUnique({
+    where: { username },
+  })
+}
+
+// to postLikes
+
+    postLikesByPostId(postId: String!): [PostLike!]! @requireAuth
+
+// Added
+export const postLikesByPostId: QueryResolvers['postLikes'] = ({ postId }) => {
+  return db.postLike.findMany({
+    where: { postId }
+  })
+}
+
+
+
+    postLikeStatusForUser(postId: String!, userId: String!): PostLike @requireAuth
+
+export const postLikeStatusForUser: QueryResolvers['postLike'] = ({ postId, userId }) => {
+  return db.postLike.findUnique({
+    where: { postId, userId },
+  })
+}

@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -10,9 +10,57 @@ generator client {
 
 // Define your own datamodels here and run `yarn redwood prisma migrate dev`
 // to create migrations for them and apply to your dev DB.
-// TODO: Please remove the following example:
-model UserExample {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+
+model User {
+  id		String		@id @default(uuid())
+  username	String		@unique
+  email		String          @unique
+  name          String?
+  avatar	String
+  banner	String?
+  bio		String?
+  hashedPassword     String
+  salt		String
+  resetToken	String?
+  resetTokenExpiresAt DateTime?
+  posts   	Post[]
+  likes		PostLike[]	@relation("userLike")
+  followers	Follows[]	@relation("following")
+  following	Follows[]	@relation("follower")
+  createdAt     DateTime	@default(now())
 }
+
+model Post {
+  id		String		@id @default(uuid())
+  body          String
+  comments      Post[]		@relation("comment")
+  parentPost	Post?		@relation("comment", fields: [parentPostId], references: [id])
+  parentPostId	String?
+  author	User		@relation(fields: [authorId], references: [id])
+  authorId	String
+  createdAt     DateTime	@default(now())
+  updatedAt     DateTime	@default(now())
+  likes		PostLike[]	@relation("postLike")
+}
+
+model PostLike {
+  id		String	 @id @default(uuid())
+  user		User	 @relation("userLike", fields: [userId], references: [id])
+  userId	String
+  post		Post	 @relation("postLike", fields: [postId], references: [id])
+  postId	String
+  createdAt 	DateTime @default(now())
+  @@unique([userId, postId])
+}
+
+
+model Follows {
+  id		String	 @id @default(uuid())
+  follower	User	 @relation("following", fields: [followerId], references: [id])
+  followerId	String
+  following	User	 @relation("follower", fields: [followingId], references: [id])
+  followingId	String
+  createdAt 	DateTime @default(now())
+  @@unique([followerId, followingId])
+}
+
